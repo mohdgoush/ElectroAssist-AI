@@ -17,6 +17,9 @@ from backend.api.auth import router as auth_router
 from backend.core.auth import get_current_user
 from backend.api.me import router as me_router
 from backend.api.session import router as session_router
+from dotenv import load_dotenv
+
+load_dotenv()
 
 Base.metadata.create_all(bind=engine)
 router = APIRouter()
