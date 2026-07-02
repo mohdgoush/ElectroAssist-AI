@@ -7,21 +7,11 @@ embeddings = HuggingFaceEmbeddings(
     model_kwargs={"device": "cpu"}
 )
 
-
 def retrieve_uploaded_context(query):
-
     vectorstore = FAISS.load_local(
         "uploads/temp_faiss",
         embeddings,
         allow_dangerous_deserialization=True
     )
-
-    docs = vectorstore.similarity_search(
-        query,
-        k=4
-    )
-
-    return "\n\n".join(
-        doc.page_content
-        for doc in docs
-    )
+    docs = vectorstore.similarity_search(query,k=4)
+    return "\n\n".join(doc.page_content for doc in docs)

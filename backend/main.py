@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from backend.core.database import engine
 from backend.models.base import Base
 from fastapi import APIRouter, Depends
-# Import all models
 from backend.api.chat import router as chat_router
 from backend.api.history import router as history_router
 from backend.api.upload import router as upload_router

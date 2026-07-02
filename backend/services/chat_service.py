@@ -1,12 +1,6 @@
 from sqlalchemy.orm import Session
-
 from backend.models.chat_history import ChatHistory
 from backend.models.session import Session as ChatSession
-
-
-# =====================================================
-# Save Message
-# =====================================================
 
 def save_message(
     db: Session,
@@ -16,14 +10,9 @@ def save_message(
     message: str
 ):
 
-    session = (
-        db.query(ChatSession)
-        .filter(ChatSession.id == session_id)
-        .first()
-    )
+    session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
 
     if session is None:
-
         return None
 
     chat = ChatHistory(
@@ -34,26 +23,9 @@ def save_message(
     )
 
     db.add(chat)
-
     db.commit()
-
     db.refresh(chat)
-
     return chat
 
-
-# =====================================================
-# Get Session Messages
-# =====================================================
-
-def get_session_messages(
-    db: Session,
-    session_id: int
-):
-
-    return (
-        db.query(ChatHistory)
-        .filter(ChatHistory.session_id == session_id)
-        .order_by(ChatHistory.created_at.asc())
-        .all()
-    )
+def get_session_messages(db: Session, session_id: int):
+    return db.query(ChatHistory).filter(ChatHistory.session_id == session_id).order_by(ChatHistory.created_at.asc()).all()

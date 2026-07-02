@@ -1,25 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-
 from backend.core.dependencies import get_db
 from backend.core.auth import get_current_user
-
 from backend.models.user import User
 from backend.models.session import Session as ChatSession
-
 from backend.services.chat_service import save_message
-
-from backend.agents.circuit_chat_agent import (
-    circuit_chat_agent
-)
-from backend.services.session_service import (
-    get_user_session,
-    auto_rename_session
-)
+from backend.agents.circuit_chat_agent import circuit_chat_agent
+from backend.services.session_service import get_user_session, auto_rename_session
 
 router = APIRouter()
-
 
 class CircuitChatRequest(BaseModel):
     session_id: int
@@ -28,36 +18,15 @@ class CircuitChatRequest(BaseModel):
 
 
 @router.post("/circuit-chat")
-def circuit_chat(
-    request: CircuitChatRequest,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
+def circuit_chat(request: CircuitChatRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
 
-    # =====================================================
-    # Verify Session
-    # =====================================================
-
-    session = (
-        db.query(ChatSession)
-        .filter(
-            ChatSession.id == request.session_id,
-            ChatSession.user_id == current_user.id
-        )
-        .first()
-    )
-
+    session = db.query(ChatSession).filter(ChatSession.id == request.session_id, ChatSession.user_id == current_user.id).first()
     if session is None:
-
         raise HTTPException(
             status_code=404,
             detail="Chat session not found."
         )
-
-    # =====================================================
-    # Save User Message
-    # =====================================================
-
+    
     save_message(
         db=db,
         session_id=request.session_id,
@@ -65,26 +34,12 @@ def circuit_chat(
         role="user",
         message=request.question
     )
-
-    auto_rename_session(
-    db,
-    request.session_id,
-    request.question
-)
-
-    # =====================================================
-    # AI Response
-    # =====================================================
-
+    auto_rename_session(db, request.session_id, request.question)
     answer = circuit_chat_agent(
         question=request.question,
         analysis=request.analysis,
         session_id=request.session_id
     )
-
-    # =====================================================
-    # Save Assistant Message
-    # =====================================================
 
     save_message(
         db=db,
@@ -93,11 +48,6 @@ def circuit_chat(
         role="assistant",
         message=answer
     )
-
-    # =====================================================
-    # Debug Log
-    # =====================================================
-
     print("\n========== CIRCUIT CHAT ==========")
     print("USER:", current_user.username)
     print("SESSION:", request.session_id)

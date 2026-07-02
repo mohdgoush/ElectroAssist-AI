@@ -27,14 +27,11 @@ def looks_like_code(text: str):
         for pattern in code_patterns
         if pattern.lower() in text.lower()
     )
-
     return matches >= 2
 
 
 def route_question(question: str):
-
     q = question.lower()
-
     datasheet_keywords = [
         "lm358",
         "lm741",
@@ -74,36 +71,18 @@ def route_question(question: str):
         "optimize code",
         "explain code"
     ]
-
-    # CODE ROUTING FIRST
-    # This prevents Verilog/Arduino code from being routed to knowledge agent
-
     for keyword in code_keywords:
-
         if keyword in q:
-
             return "code_review"
-
+        
     if looks_like_code(question):
-
         return "code_review"
 
-    # DATASHEET ROUTING
-
     for keyword in datasheet_keywords:
-
         if keyword in q:
-
             return "datasheet"
 
-    # TROUBLESHOOTING ROUTING
-
     for keyword in troubleshooting_keywords:
-
         if keyword in q:
-
             return "troubleshooting"
-
-    # DEFAULT
-
     return "knowledge"

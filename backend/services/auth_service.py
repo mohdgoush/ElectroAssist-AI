@@ -1,36 +1,13 @@
 from sqlalchemy.orm import Session
-
 from backend.models.user import User
+from backend.core.security import hash_password, verify_password
 
-from backend.core.security import (
-    hash_password,
-    verify_password
-)
-
-
-def get_user_by_email(
-    db: Session,
-    email: str
-):
-
-    return (
-        db.query(User)
-        .filter(User.email == email)
-        .first()
-    )
+def get_user_by_email(db: Session, email: str):
+    return db.query(User).filter(User.email == email).first()
 
 
-def get_user_by_username(
-    db: Session,
-    username: str
-):
-
-    return (
-        db.query(User)
-        .filter(User.username == username)
-        .first()
-    )
-
+def get_user_by_username(db: Session,username: str):
+    return db.query(User).filter(User.username == username).first()
 
 def create_user(
     db: Session,
@@ -38,7 +15,6 @@ def create_user(
     email: str,
     password: str
 ):
-
     user = User(
         username=username,
         email=email,
@@ -46,11 +22,8 @@ def create_user(
     )
 
     db.add(user)
-
     db.commit()
-
     db.refresh(user)
-
     return user
 
 
@@ -60,20 +33,10 @@ def authenticate_user(
     password: str
 ):
 
-    user = get_user_by_email(
-        db,
-        email
-    )
+    user = get_user_by_email(db, email)
 
     if user is None:
-
         return None
-
-    if not verify_password(
-        password,
-        user.password_hash
-    ):
-
+    if not verify_password(password, user.password_hash):
         return None
-
     return user

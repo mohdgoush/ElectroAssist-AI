@@ -1,12 +1,8 @@
 from groq import Groq
-
 from backend.core.config import GROQ_API_KEY
 
 
-client = Groq(
-    api_key=GROQ_API_KEY
-)
-
+client = Groq(api_key=GROQ_API_KEY)
 
 SYSTEM_PROMPT = """
 You are ElectroAssist AI, an intelligent electronics engineering assistant.
@@ -36,23 +32,19 @@ Behavior Rules:
 """
 
 
-def generate_response_with_context(
-    question: str,
-    context: str
-):
+def generate_response_with_context(question: str, context: str):
 
     prompt = f"""
-Context and Instructions:
+        Context and Instructions:
 
-{context}
+        {context}
 
-Current User Question:
+        Current User Question:
 
-{question}
+        {question}
 
-Answer:
-"""
-
+        Answer:
+        """
     completion = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
@@ -66,5 +58,4 @@ Answer:
             }
         ]
     )
-
     return completion.choices[0].message.content
