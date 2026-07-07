@@ -223,7 +223,7 @@ def upload_pdf(
         UPLOAD_URL,
         files=files,
         headers=get_headers(token),
-        timeout=60
+        timeout=300
     )
 
 

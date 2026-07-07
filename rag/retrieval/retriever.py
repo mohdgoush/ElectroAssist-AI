@@ -3,6 +3,8 @@ from pathlib import Path
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 
+from rag.retrieval.reranker import rerank_documents
+
 
 # =====================================================
 # Embedding Model
@@ -39,31 +41,36 @@ def load_vectorstore(path: Path):
 def retrieve_context(
     question: str,
     user_id: int,
-    k: int = 4
+    retrieval_k: int = 10,
+    final_k: int = 4
 ):
 
     contexts = []
 
-    # ----------------------------------------
+
+    # =================================================
     # Developer Knowledge Base
-    # ----------------------------------------
+    # =================================================
 
     developer_store = load_vectorstore(
-        Path("knowledge_base/developer/vector_store")
+        Path(
+            "knowledge_base/developer/vector_store"
+        )
     )
 
     if developer_store:
 
         docs = developer_store.similarity_search(
             question,
-            k=k
+            k=retrieval_k
         )
 
         contexts.extend(docs)
 
-    # ----------------------------------------
+
+    # =================================================
     # User Knowledge Base
-    # ----------------------------------------
+    # =================================================
 
     user_store = load_vectorstore(
         Path(
@@ -75,14 +82,15 @@ def retrieve_context(
 
         docs = user_store.similarity_search(
             question,
-            k=k
+            k=retrieval_k
         )
 
         contexts.extend(docs)
 
-    # ----------------------------------------
+
+    # =================================================
     # Remove Duplicate Chunks
-    # ----------------------------------------
+    # =================================================
 
     unique = {}
 
@@ -90,7 +98,27 @@ def retrieve_context(
 
         unique[doc.page_content] = doc
 
+    unique_documents = list(
+        unique.values()
+    )
+
+
+    # =================================================
+    # Rerank Documents
+    # =================================================
+
+    reranked_documents = rerank_documents(
+        question=question,
+        documents=unique_documents,
+        top_k=final_k
+    )
+
+
+    # =================================================
+    # Build Final Context
+    # =================================================
+
     return "\n\n".join(
         doc.page_content
-        for doc in unique.values()
+        for doc in reranked_documents
     )
